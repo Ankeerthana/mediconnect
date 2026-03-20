@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+          --primary: #0A6E6E;
+          --accent: #00C9A7;
+          --bg: #F4F7F6;
+          --text: #1A2E2E;
+          --text2: #4A6363;
+          --text3: #8AABAB;
+          --border: #D8E8E8;
+          --shadow: 0 4px 24px rgba(10,110,110,0.10);
+          --radius: 16px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+        .page { display: none; min-height: 100vh; }
+        .page.active { display: flex; flex-direction: column; }
+        .navbar { background: white; padding: 0 2rem; height: 65px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .nav-links { display: flex; gap: 12px; align-items: center; }
+        .btn { padding: 9px 22px; border-radius: 50px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+        .btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-fill { background: var(--primary); color: white; }
+        .btn-fill:hover { background: #075555; }
+        .btn-sm { padding: 7px 16px; font-size: 0.82rem; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-big { padding: 14px 32px; font-size: 1rem; border-radius: 50px; }
+        .hero { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; width: 100%; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,201,167,0.1); color: var(--primary); padding: 6px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 500; margin-bottom: 1.5rem; border: 1px solid rgba(0,201,167,0.2); }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 3rem; line-height: 1.2; margin-bottom: 1rem; }
+        .hero h1 span { color: var(--primary); }
+        .hero p { font-size: 1rem; color: var(--text2); line-height: 1.7; margin-bottom: 2rem; }
+        .hero-btns { display: flex; gap: 1rem; }
+        .hero-stats { display: flex; gap: 2rem; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .stat .num { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--primary); }
+        .stat .lbl { font-size: 0.75rem; color: var(--text3); }
+        .preview { display: flex; flex-direction: column; gap: 1rem; }
+        .card { background: white; border-radius: var(--radius); padding: 1.4rem; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .card-title { font-weight: 600; font-size: 0.88rem; color: var(--text2); margin-bottom: 1rem; }
+        .queue-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .queue-row:last-child { border: none; }
+        .q-num { width: 30px; height: 30px; border-radius: 8px; background: rgba(10,110,110,0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.82rem; }
+        .q-info { flex: 1; }
+        .q-name { font-size: 0.88rem; font-weight: 500; }
+        .q-time { font-size: 0.75rem; color: var(--text3); }
+        .badge { padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 500; }
+        .badge-wait { background: rgba(255,107,107,0.1); color: #d44; }
+        .badge-confirm { background: rgba(0,201,167,0.1); color: #009980; }
+        .badge-active { background: rgba(10,110,110,0.1); color: var(--primary); }
+        .auth-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, #f0fafa, #e8f5f5); }
+        .auth-card { background: white; border-radius: var(--radius); padding: 2.5rem; width: 100%; max-width: 430px; box-shadow: var(--shadow); }
+        .auth-head { text-align: center; margin-bottom: 2rem; }
+        .auth-head h2 { font-family: 'Playfair Display', serif; color: var(--primary); font-size: 1.5rem; }
+        .auth-head p { color: var(--text3); font-size: 0.85rem; margin-top: 4px; }
+        .tabs { display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 1.8rem; }
+        .tab { flex: 1; padding: 9px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: var(--text2); border: none; background: transparent; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .tab.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .form-group { margin-bottom: 1.1rem; }
+        .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+        .form-input, .form-select { width: 100%; padding: 11px 15px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.93rem; color: var(--text); background: var(--bg); outline: none; transition: all 0.2s; }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(10,110,110,0.07); }
+        .btn-full { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+        .btn-full:hover { background: #075555; }
+        .alert { padding: 11px 15px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1rem; }
+        .alert-error { background: rgba(255,68,68,0.08); color: #c0392b; border: 1px solid rgba(255,68,68,0.2); }
+        .alert-success { background: rgba(0,201,167,0.08); color: #009980; border: 1px solid rgba(0,201,167,0.2); }
+        .dash-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 65px); }
+        .sidebar { background: white; border-right: 1px solid var(--border); padding: 1.5rem 0; }
+        .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 1.5rem; cursor: pointer; font-size: 0.9rem; color: var(--text2); transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar-item:hover { background: var(--bg); color: var(--primary); }
+        .sidebar-item.active { background: rgba(10,110,110,0.06); color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
+        .sidebar-icon { font-size: 1.1rem; }
+        .dash-content { padding: 2rem; overflow-y: auto; }
+        .dash-header { margin-bottom: 2rem; }
+        .dash-header h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; }
+        .dash-header p { color: var(--text2); font-size: 0.9rem; margin-top: 4px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: var(--radius); padding: 1.3rem; border: 1px solid var(--border); }
+        .stat-card .s-label { font-size: 0.78rem; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .s-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--primary); margin: 4px 0; }
+        .stat-card .s-sub { font-size: 0.78rem; color: var(--text2); }
+        .section-card { background: white; border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .section-card-title { font-weight: 600; font-size: 1rem; margin-bottom: 1.2rem; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; padding: 10px 12px; font-size: 0.78rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+        .table td { padding: 12px; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
+        .table tr:last-child td { border: none; }
+        .table tr:hover td { background: var(--bg); }
+        .doc-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; margin-bottom: 10px; }
+        .doc-card:hover { border-color: var(--primary); background: rgba(10,110,110,0.02); }
+        .doc-avatar { width: 44px; height: 44px; border-radius: 12px; background: rgba(10,110,110,0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .doc-info h4 { font-size: 0.92rem; font-weight: 600; }
+        .doc-info p { font-size: 0.78rem; color: var(--text2); }
+        .doc-fee { margin-left: auto; font-weight: 600; color: var(--primary); font-size: 0.9rem; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .loading { text-align: center; padding: 2rem; color: var(--text3); font-size: 0.9rem; }
+        .empty { text-align: center; padding: 3rem; color: var(--text3); }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .profile-box { display: flex; align-items: center; gap: 16px; padding: 1.5rem; background: linear-gradient(135deg, rgba(10,110,110,0.05), rgba(0,201,167,0.05)); border-radius: var(--radius); margin-bottom: 1.5rem; border: 1px solid var(--border); }
+        .profile-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 600; }
+        .profile-info h3 { font-size: 1.1rem; font-weight: 600; }
+        .role-tag { display: inline-block; padding: 3px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 500; }
+        .role-patient { background: rgba(0,201,167,0.1); color: #009980; }
+        .role-doctor { background: rgba(10,110,110,0.1); color: var(--primary); }
+        .role-admin { background: rgba(255,107,107,0.1); color: #d44; }
+    </style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div id="page-landing" class="page active">
+    <nav class="navbar">
+        <div class="logo"><div class="logo-dot"></div>MediConnect</div>
+        <div class="nav-links">
+            <button class="btn btn-outline" onclick="showPage('page-auth')">Login</button>
+            <button class="btn btn-fill" onclick="showPage('page-auth')">Get Started</button>
+        </div>
+    </nav>
+    <div class="hero">
+        <div>
+            <div class="hero-badge"><span class="logo-dot"></span> Smart Hospital Management</div>
+            <h1>Healthcare that <span>moves faster</span> than ever</h1>
+            <p>MediConnect eliminates clinic waiting chaos. Real-time queue tracking, seamless appointment booking and intelligent patient management — all in one platform.</p>
+            <div class="hero-btns">
+                <button class="btn btn-fill btn-big" onclick="showPage('page-auth')">Book Appointment</button>
+                <button class="btn btn-outline btn-big" onclick="showPage('page-auth')">For Hospitals</button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><div class="num">2.4k+</div><div class="lbl">Patients Served</div></div>
+                <div class="stat"><div class="num">98%</div><div class="lbl">Satisfaction Rate</div></div>
+                <div class="stat"><div class="num">15min</div><div class="lbl">Avg Wait Time</div></div>
+            </div>
+        </div>
+        <div class="preview">
+            <div class="card">
+                <div class="card-title">🏥 Today's Queue — Dr. Priya Sharma</div>
+                <div class="queue-row"><div class="q-num">1</div><div class="q-info"><div class="q-name">Rahul Mehta</div><div class="q-time">10:00 AM • General Checkup</div></div><span class="badge badge-active">In Progress</span></div>
+                <div class="queue-row"><div class="q-num">2</div><div class="q-info"><div class="q-name">Anita Sharma</div><div class="q-time">10:30 AM • Follow Up</div></div><span class="badge badge-confirm">Confirmed</span></div>
+                <div class="queue-row"><div class="q-num">3</div><div class="q-info"><div class="q-name">Karthik R</div><div class="q-time">11:00 AM • Consultation</div></div><span class="badge badge-wait">Waiting</span></div>
+            </div>
+            <div class="card">
+                <div class="card-title">📊 Quick Stats</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                    <div style="text-align:center;padding:0.8rem;background:var(--bg);border-radius:10px"><div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--primary)">12</div><div style="font-size:0.75rem;color:var(--text3)">Today's Appointments</div></div>
+                    <div style="text-align:center;padding:0.8rem;background:var(--bg);border-radius:10px"><div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:#009980">8</div><div style="font-size:0.75rem;color:var(--text3)">Completed</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="padding:4rem 2rem;background:white">
+        <div style="text-align:center;margin-bottom:2.5rem">
+            <h2 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:0.5rem">Everything your clinic needs</h2>
+            <p style="color:var(--text2)">Designed for patients, doctors and administrators</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;margin:0 auto">
+            <div style="padding:1.8rem;border:1px solid var(--border);border-radius:var(--radius)"><div style="font-size:1.8rem;margin-bottom:1rem">📅</div><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:0.5rem">Smart Booking</h3><p style="font-size:0.85rem;color:var(--text2);line-height:1.6">Book appointments in seconds. Choose your doctor, pick a time and get instant confirmation.</p></div>
+            <div style="padding:1.8rem;border:1px solid var(--border);border-radius:var(--radius)"><div style="font-size:1.8rem;margin-bottom:1rem">🔢</div><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:0.5rem">Live Queue</h3><p style="font-size:0.85rem;color:var(--text2);line-height:1.6">Know exactly where you are in the queue. No more waiting blindly in crowded clinics.</p></div>
+            <div style="padding:1.8rem;border:1px solid var(--border);border-radius:var(--radius)"><div style="font-size:1.8rem;margin-bottom:1rem">🔐</div><h3 style="font-size:0.95rem;font-weight:600;margin-bottom:0.5rem">Role Based Access</h3><p style="font-size:0.85rem;color:var(--text2);line-height:1.6">Separate dashboards for Patients, Doctors and Admins. Everyone sees what they need.</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- AUTH PAGE -->
+<div id="page-auth" class="page">
+    <nav class="navbar">
+        <div class="logo" onclick="showPage('page-landing')" style="cursor:pointer"><div class="logo-dot"></div>MediConnect</div>
+    </nav>
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-head">
+                <h2>Welcome to MediConnect</h2>
+                <p>Sign in or create your account</p>
+            </div>
+            <div class="tabs">
+                <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button class="tab" id="tab-register" onclick="switchTab('register')">Register</button>
+            </div>
+            <div id="auth-alert"></div>
+            <div id="form-login">
+                <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="login-email" placeholder="your@email.com"></div>
+                <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="login-password" placeholder="Enter password"></div>
+                <button class="btn-full" onclick="doLogin()">Sign In →</button>
+            </div>
+            <div id="form-register" style="display:none">
+                <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" id="reg-name" placeholder="Your full name"></div>
+                <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="reg-email" placeholder="your@email.com"></div>
+                <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" type="text" id="reg-phone" placeholder="9999999999"></div>
+                <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="reg-password" placeholder="Create password"></div>
+                <div class="form-group">
+                    <label class="form-label">I am a</label>
+                    <select class="form-select" id="reg-role">
+                        <option value="PATIENT">Patient</option>
+                        <option value="DOCTOR">Doctor</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+                <button class="btn-full" onclick="doRegister()">Create Account →</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PATIENT DASHBOARD -->
+<div id="page-patient" class="page">
+    <nav class="navbar">
+        <div class="logo"><div class="logo-dot"></div>MediConnect</div>
+        <div class="nav-links">
+            <span style="font-size:0.88rem;color:var(--text2)" id="patient-nav-name"></span>
+            <span class="role-tag role-patient">Patient</span>
+            <button class="btn btn-sm btn-outline" onclick="doLogout()">Logout</button>
+        </div>
+    </nav>
+    <div class="dash-layout">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="patientTab('overview')"><span class="sidebar-icon">🏠</span> Overview</div>
+            <div class="sidebar-item" onclick="patientTab('book')"><span class="sidebar-icon">📅</span> Book Appointment</div>
+            <div class="sidebar-item" onclick="patientTab('appointments')"><span class="sidebar-icon">📋</span> My Appointments</div>
+            <div class="sidebar-item" onclick="patientTab('queue')"><span class="sidebar-icon">🔢</span> Queue Status</div>
+        </div>
+        <div class="dash-content">
+            <div id="ptab-overview">
+                <div class="dash-header"><h2 id="patient-welcome">Good morning!</h2><p>Manage your appointments and track your queue position</p></div>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="s-label">My Appointments</div><div class="s-num" id="p-total">0</div><div class="s-sub">Total booked</div></div>
+                    <div class="stat-card"><div class="s-label">Pending</div><div class="s-num" id="p-pending">0</div><div class="s-sub">Awaiting confirmation</div></div>
+                    <div class="stat-card"><div class="s-label">Confirmed</div><div class="s-num" id="p-confirmed">0</div><div class="s-sub">Ready to visit</div></div>
+                    <div class="stat-card"><div class="s-label">Completed</div><div class="s-num" id="p-completed">0</div><div class="s-sub">Past visits</div></div>
+                </div>
+                <div class="section-card">
+                    <div class="section-card-title">Recent Appointments <button class="btn btn-sm btn-fill" onclick="patientTab('book')">+ Book New</button></div>
+                    <div id="p-recent-list"><div class="loading">Loading...</div></div>
+                </div>
+            </div>
+            <div id="ptab-book" style="display:none">
+                <div class="dash-header"><h2>Book an Appointment</h2><p>Choose a doctor and select your preferred time</p></div>
+                <div class="grid2">
+                    <div class="section-card">
+                        <div class="section-card-title">Available Doctors</div>
+                        <div id="doctors-list"><div class="loading">Loading doctors...</div></div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-title">Appointment Details</div>
+                        <div id="selected-doctor-info" style="padding:1rem;background:var(--bg);border-radius:10px;margin-bottom:1.2rem;font-size:0.88rem;color:var(--text2)">← Select a doctor first</div>
+                        <div class="form-group"><label class="form-label">Date & Time</label><input class="form-input" type="datetime-local" id="appt-time"></div>
+                        <div class="form-group"><label class="form-label">Reason for Visit</label><input class="form-input" type="text" id="appt-reason" placeholder="e.g. Fever, Follow-up, Checkup"></div>
+                        <div id="book-alert"></div>
+                        <button class="btn-full" onclick="bookAppointment()">Confirm Booking →</button>
+                    </div>
+                </div>
+            </div>
+            <div id="ptab-appointments" style="display:none">
+                <div class="dash-header"><h2>My Appointments</h2><p>All your booked appointments</p></div>
+                <div class="section-card"><div id="my-appts-list"><div class="loading">Loading...</div></div></div>
+            </div>
+            <div id="ptab-queue" style="display:none">
+                <div class="dash-header"><h2>Queue Status</h2><p>Check live queue for any doctor</p></div>
+                <div class="section-card">
+                    <div class="section-card-title">Select Doctor</div>
+                    <div id="queue-doctors-list"><div class="loading">Loading...</div></div>
+                </div>
+                <div id="queue-result" style="display:none" class="section-card">
+                    <div class="section-card-title" id="queue-doc-name">Queue</div>
+                    <div id="queue-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DOCTOR DASHBOARD -->
+<div id="page-doctor" class="page">
+    <nav class="navbar">
+        <div class="logo"><div class="logo-dot"></div>MediConnect</div>
+        <div class="nav-links">
+            <span style="font-size:0.88rem;color:var(--text2)" id="doctor-nav-name"></span>
+            <span class="role-tag role-doctor">Doctor</span>
+            <button class="btn btn-sm btn-outline" onclick="doLogout()">Logout</button>
+        </div>
+    </nav>
+    <div class="dash-layout">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="doctorTab('overview')"><span class="sidebar-icon">🏠</span> Overview</div>
+            <div class="sidebar-item" onclick="doctorTab('queue')"><span class="sidebar-icon">🔢</span> Today's Queue</div>
+            <div class="sidebar-item" onclick="doctorTab('profile')"><span class="sidebar-icon">👤</span> My Profile</div>
+        </div>
+        <div class="dash-content">
+            <div id="dtab-overview">
+                <div class="dash-header"><h2 id="doctor-welcome">Welcome, Doctor!</h2><p>Manage your appointments and patient queue</p></div>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="s-label">Total Appointments</div><div class="s-num" id="d-total">0</div><div class="s-sub">All time</div></div>
+                    <div class="stat-card"><div class="s-label">Today's Queue</div><div class="s-num" id="d-queue">0</div><div class="s-sub">Pending patients</div></div>
+                    <div class="stat-card"><div class="s-label">Confirmed</div><div class="s-num" id="d-confirmed">0</div><div class="s-sub">Ready to see</div></div>
+                    <div class="stat-card"><div class="s-label">Completed</div><div class="s-num" id="d-completed">0</div><div class="s-sub">Today</div></div>
+                </div>
+                <div class="section-card">
+                    <div class="section-card-title">My Patients</div>
+                    <div id="d-appts-list"><div class="loading">Loading...</div></div>
+                </div>
+            </div>
+            <div id="dtab-queue" style="display:none">
+                <div class="dash-header"><h2>Today's Queue</h2><p>Patients waiting for your consultation</p></div>
+                <div class="section-card"><div id="d-queue-list"><div class="loading">Loading queue...</div></div></div>
+            </div>
+            <div id="dtab-profile" style="display:none">
+                <div class="dash-header"><h2>My Profile</h2></div>
+                <div class="section-card"><div id="d-profile-info"><div class="loading">Loading...</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page">
+    <nav class="navbar">
+        <div class="logo"><div class="logo-dot"></div>MediConnect</div>
+        <div class="nav-links">
+            <span style="font-size:0.88rem;color:var(--text2)" id="admin-nav-name"></span>
+            <span class="role-tag role-admin">Admin</span>
+            <button class="btn btn-sm btn-outline" onclick="doLogout()">Logout</button>
+        </div>
+    </nav>
+    <div class="dash-layout">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="adminTab('overview')"><span class="sidebar-icon">🏠</span> Overview</div>
+            <div class="sidebar-item" onclick="adminTab('doctors')"><span class="sidebar-icon">👨‍⚕️</span> Manage Doctors</div>
+            <div class="sidebar-item" onclick="adminTab('appointments')"><span class="sidebar-icon">📋</span> All Appointments</div>
+        </div>
+        <div class="dash-content">
+            <div id="atab-overview">
+                <div class="dash-header"><h2>Admin Dashboard</h2><p>Hospital overview and management</p></div>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="s-label">Total Doctors</div><div class="s-num" id="a-docs">0</div><div class="s-sub">Registered</div></div>
+                    <div class="stat-card"><div class="s-label">Total Appointments</div><div class="s-num" id="a-appts">0</div><div class="s-sub">All time</div></div>
+                    <div class="stat-card"><div class="s-label">Pending</div><div class="s-num" id="a-pending">0</div><div class="s-sub">Need confirmation</div></div>
+                    <div class="stat-card"><div class="s-label">Completed</div><div class="s-num" id="a-completed">0</div><div class="s-sub">Successfully done</div></div>
+                </div>
+            </div>
+            <div id="atab-doctors" style="display:none">
+                <div class="dash-header"><h2>Manage Doctors</h2></div>
+                <div class="section-card">
+                    <div class="section-card-title">All Doctors</div>
+                    <div id="admin-doctors-list"><div class="loading">Loading...</div></div>
+                </div>
+            </div>
+            <div id="atab-appointments" style="display:none">
+                <div class="dash-header"><h2>All Appointments</h2></div>
+                <div class="section-card"><div id="admin-appts-list"><div class="loading">Loading...</div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+    let token = localStorage.getItem('mc_token');
+    let userRole = localStorage.getItem('mc_role');
+    let userName = localStorage.getItem('mc_name');
+    let selectedDoctorId = null;
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function switchTab(t) {
+      document.getElementById('form-login').style.display = t==='login' ? 'block' : 'none';
+      document.getElementById('form-register').style.display = t==='register' ? 'block' : 'none';
+      document.getElementById('tab-login').classList.toggle('active', t==='login');
+      document.getElementById('tab-register').classList.toggle('active', t==='register');
+      document.getElementById('auth-alert').innerHTML = '';
+    }
+
+    function showAlert(id, msg, type='error') {
+      document.getElementById(id).innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+    }
+
+    function authHeader() {
+      return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    }
+
+    // ===== AUTH =====
+    async function doLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) return showAlert('auth-alert', 'Please fill all fields');
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert('auth-alert', 'Invalid email or password'); return; }
+        token = data.token; userRole = data.role; userName = data.name;
+        localStorage.setItem('mc_token', token);
+        localStorage.setItem('mc_role', userRole);
+        localStorage.setItem('mc_name', userName);
+        goToDashboard();
+      } catch(e) { showAlert('auth-alert', 'Connection error. Is the backend running?'); }
+    }
+
+    async function doRegister() {
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const phone = document.getElementById('reg-phone').value;
+      const password = document.getElementById('reg-password').value;
+      const role = document.getElementById('reg-role').value;
+      if (!name||!email||!password) return showAlert('auth-alert', 'Please fill all fields');
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({name, email, phone, password, role})
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert('auth-alert', data || 'Registration failed'); return; }
+        showAlert('auth-alert', 'Account created! Please sign in.', 'success');
+        switchTab('login');
+      } catch(e) { showAlert('auth-alert', 'Connection error. Is the backend running?'); }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('mc_token');
+      localStorage.removeItem('mc_role');
+      localStorage.removeItem('mc_name');
+      token = null; userRole = null; userName = null;
+      showPage('page-landing');
+    }
+
+    function goToDashboard() {
+      if (userRole === 'PATIENT') { loadPatientDashboard(); showPage('page-patient'); }
+      else if (userRole === 'DOCTOR') { loadDoctorDashboard(); showPage('page-doctor'); }
+      else if (userRole === 'ADMIN') { loadAdminDashboard(); showPage('page-admin'); }
+    }
+
+    // ===== PATIENT =====
+    function patientTab(t) {
+      ['overview','book','appointments','queue'].forEach(tab => {
+        document.getElementById('ptab-'+tab).style.display = tab===t ? 'block' : 'none';
+      });
+      document.querySelectorAll('#page-patient .sidebar-item').forEach((el,i) => {
+        el.classList.toggle('active', ['overview','book','appointments','queue'][i]===t);
+      });
+      if (t==='book') loadDoctors();
+      if (t==='appointments') loadMyAppointments();
+      if (t==='queue') loadQueueDoctors();
+      if (t==='overview') loadPatientOverview();
+    }
+
+    async function loadPatientDashboard() {
+      document.getElementById('patient-nav-name').textContent = userName || '';
+      const hr = new Date().getHours();
+      const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('patient-welcome').textContent = `${greet}, ${userName || 'Patient'}!`;
+      loadPatientOverview();
+    }
+
+    async function loadPatientOverview() {
+      try {
+        const res = await fetch(`${API}/appointments/my`, {headers: authHeader()});
+        const appts = await res.json();
+        document.getElementById('p-total').textContent = appts.length;
+        document.getElementById('p-pending').textContent = appts.filter(a=>a.status==='PENDING').length;
+        document.getElementById('p-confirmed').textContent = appts.filter(a=>a.status==='CONFIRMED').length;
+        document.getElementById('p-completed').textContent = appts.filter(a=>a.status==='COMPLETED').length;
+        const recent = appts.slice(-3).reverse();
+        document.getElementById('p-recent-list').innerHTML = recent.length ?
+          recent.map(a => apptRow(a)).join('') :
+          '<div class="empty"><div class="empty-icon">📅</div><p>No appointments yet</p></div>';
+      } catch(e) { document.getElementById('p-recent-list').innerHTML = '<div class="loading">Unable to load</div>'; }
+    }
+
+    function apptRow(a) {
+      const statusColor = {PENDING:'badge-wait', CONFIRMED:'badge-confirm', COMPLETED:'badge-active', CANCELLED:'badge-wait'};
+      const time = a.appointmentTime ? new Date(a.appointmentTime).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : 'N/A';
+      const docName = a.doctor?.user?.name || 'Doctor';
+      return `<div class="queue-row">
+        <div class="q-num">${a.queuePosition||'—'}</div>
+        <div class="q-info"><div class="q-name">Dr. ${docName}</div><div class="q-time">${time} • ${a.reason||'Consultation'}</div></div>
+        <span class="badge ${statusColor[a.status]||'badge-wait'}">${a.status}</span>
+      </div>`;
+    }
+
+    async function loadDoctors() {
+      try {
+        const res = await fetch(`${API}/doctors/all`, {headers: authHeader()});
+        if (!res.ok) { useFallbackDoctors(); return; }
+        const docs = await res.json();
+        renderDoctors(docs);
+      } catch(e) { useFallbackDoctors(); }
+    }
+
+    function useFallbackDoctors() {
+      renderDoctors([]);
+    }
+
+    function renderDoctors(docs) {
+      document.getElementById('doctors-list').innerHTML = docs.length ? docs.map(d => `
+        <div class="doc-card" onclick="selectDoctor(${d.id},'${d.user?.name||'Doctor'}','${d.specialization||'General'}',${d.consultationFee||0})" id="doc-card-${d.id}">
+          <div class="doc-avatar">👨‍⚕️</div>
+          <div class="doc-info"><h4>${d.user?.name||'Doctor'}</h4><p>${d.specialization||'General'}</p></div>
+          <div class="doc-fee">₹${d.consultationFee||0}</div>
+        </div>`).join('') :
+        '<div class="empty"><div class="empty-icon">👨‍⚕️</div><p>No doctors available</p></div>';
+
+      if (document.getElementById('queue-doctors-list')) {
+        document.getElementById('queue-doctors-list').innerHTML = docs.length ? docs.map(d => `
+          <div class="doc-card" onclick="loadDoctorQueue(${d.id},'${d.user?.name||'Doctor'}')">
+            <div class="doc-avatar">👨‍⚕️</div>
+            <div class="doc-info"><h4>${d.user?.name||'Doctor'}</h4><p>${d.specialization||'General'}</p></div>
+            <button class="btn btn-sm btn-outline">View Queue →</button>
+          </div>`).join('') :
+          '<div class="empty"><div class="empty-icon">👨‍⚕️</div><p>No doctors available</p></div>';
+      }
+    }
+
+    function selectDoctor(id, name, spec, fee) {
+      selectedDoctorId = id;
+      document.getElementById('selected-doctor-info').innerHTML = `<strong>👨‍⚕️ ${name}</strong><br><span style="color:var(--text3)">${spec} • ₹${fee}</span>`;
+      document.querySelectorAll('.doc-card').forEach(el => el.style.borderColor = 'var(--border)');
+      const card = document.getElementById('doc-card-'+id);
+      if (card) card.style.borderColor = 'var(--primary)';
+    }
+
+    async function bookAppointment() {
+      if (!selectedDoctorId) return showAlert('book-alert', 'Please select a doctor first');
+      const time = document.getElementById('appt-time').value;
+      const reason = document.getElementById('appt-reason').value;
+      if (!time || !reason) return showAlert('book-alert', 'Please fill all fields');
+      try {
+        const res = await fetch(`${API}/appointments/book`, {
+          method: 'POST', headers: authHeader(),
+          body: JSON.stringify({doctorId: selectedDoctorId, time: time+':00', reason})
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert('book-alert', 'Booking failed. Try again.'); return; }
+        showAlert('book-alert', `✅ Booked! Your queue position: #${data.queuePosition}`, 'success');
+        document.getElementById('appt-time').value = '';
+        document.getElementById('appt-reason').value = '';
+        selectedDoctorId = null;
+      } catch(e) { showAlert('book-alert', 'Connection error'); }
+    }
+
+    async function loadMyAppointments() {
+      try {
+        const res = await fetch(`${API}/appointments/my`, {headers: authHeader()});
+        const appts = await res.json();
+        document.getElementById('my-appts-list').innerHTML = appts.length ?
+          `<table class="table"><thead><tr><th>#</th><th>Doctor</th><th>Date & Time</th><th>Reason</th><th>Status</th></tr></thead><tbody>` +
+          appts.map(a => {
+            const sc = {PENDING:'badge-wait',CONFIRMED:'badge-confirm',COMPLETED:'badge-active'};
+            const time = a.appointmentTime ? new Date(a.appointmentTime).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : 'N/A';
+            return `<tr><td>#${a.queuePosition||'—'}</td><td>Dr. ${a.doctor?.user?.name||'—'}</td><td>${time}</td><td>${a.reason||'—'}</td><td><span class="badge ${sc[a.status]||'badge-wait'}">${a.status}</span></td></tr>`;
+          }).join('') + `</tbody></table>` :
+          '<div class="empty"><div class="empty-icon">📋</div><p>No appointments yet. Book one!</p></div>';
+      } catch(e) {}
+    }
+
+    async function loadQueueDoctors() {
+      loadDoctors();
+    }
+
+    async function loadDoctorQueue(docId, docName) {
+      try {
+        const res = await fetch(`${API}/appointments/queue/${docId}`, {headers: authHeader()});
+        const data = await res.json();
+        document.getElementById('queue-result').style.display = 'block';
+        document.getElementById('queue-doc-name').textContent = `Queue for Dr. ${docName} (${data.queueLength||0} waiting)`;
+        const appts = data.appointments || [];
+        document.getElementById('queue-list').innerHTML = appts.length ?
+          appts.map(a => apptRow(a)).join('') :
+          '<div class="empty"><div class="empty-icon">✅</div><p>No patients in queue</p></div>';
+      } catch(e) {}
+    }
+
+    // ===== DOCTOR ===== (FIXED - uses /doctor/my-queue)
+    function doctorTab(t) {
+      ['overview','queue','profile'].forEach(tab => {
+        document.getElementById('dtab-'+tab).style.display = tab===t ? 'block' : 'none';
+      });
+      document.querySelectorAll('#page-doctor .sidebar-item').forEach((el,i) => {
+        el.classList.toggle('active', ['overview','queue','profile'][i]===t);
+      });
+      if (t==='queue') loadDoctorQueueView();
+      if (t==='profile') loadDoctorProfile();
+    }
+
+    async function loadDoctorDashboard() {
+      document.getElementById('doctor-nav-name').textContent = userName || '';
+      document.getElementById('doctor-welcome').textContent = `Welcome, ${userName||'Doctor'}!`;
+      try {
+        // FIXED: use doctor/my-queue to get patients' appointments
+        const res = await fetch(`${API}/appointments/doctor/my-queue`, {headers: authHeader()});
+        const appts = await res.json();
+        document.getElementById('d-total').textContent = appts.length;
+        document.getElementById('d-queue').textContent = appts.filter(a=>a.status==='PENDING').length;
+        document.getElementById('d-confirmed').textContent = appts.filter(a=>a.status==='CONFIRMED').length;
+        document.getElementById('d-completed').textContent = appts.filter(a=>a.status==='COMPLETED').length;
+        document.getElementById('d-appts-list').innerHTML = appts.length ?
+          `<table class="table"><thead><tr><th>#</th><th>Patient</th><th>Date & Time</th><th>Reason</th><th>Status</th></tr></thead><tbody>` +
+          appts.map(a => {
+            const sc = {PENDING:'badge-wait',CONFIRMED:'badge-confirm',COMPLETED:'badge-active'};
+            const time = a.appointmentTime ? new Date(a.appointmentTime).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : 'N/A';
+            return `<tr><td>#${a.queuePosition||'—'}</td><td>${a.patient?.name||'Patient'}</td><td>${time}</td><td>${a.reason||'—'}</td><td><span class="badge ${sc[a.status]||'badge-wait'}">${a.status}</span></td></tr>`;
+          }).join('') + `</tbody></table>` :
+          '<div class="empty"><div class="empty-icon">📋</div><p>No patients yet</p></div>';
+      } catch(e) {}
+    }
+
+    async function loadDoctorQueueView() {
+      document.getElementById('d-queue-list').innerHTML = '<div class="loading">Loading queue...</div>';
+      try {
+        // FIXED: use doctor/my-queue to get patients' appointments
+        const res = await fetch(`${API}/appointments/doctor/my-queue`, {headers: authHeader()});
+        const appts = await res.json();
+        const queue = appts.filter(a=>a.status==='PENDING'||a.status==='CONFIRMED');
+        document.getElementById('d-queue-list').innerHTML = queue.length ?
+          queue.map(a => `
+            <div class="queue-row">
+              <div class="q-num">${a.queuePosition||'—'}</div>
+              <div class="q-info">
+                <div class="q-name">${a.patient?.name||'Patient'}</div>
+                <div class="q-time">${a.reason||'Consultation'}</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                ${a.status==='PENDING' ? `<button class="btn btn-sm btn-accent" onclick="updateAppt(${a.id},'CONFIRMED')">✅ Accept</button>` : ''}
+                ${a.status==='CONFIRMED' ? `<button class="btn btn-sm btn-fill" onclick="updateAppt(${a.id},'COMPLETED')">✔ Complete</button>` : ''}
+                <button class="btn btn-sm" style="background:#ff4444;color:white" onclick="updateAppt(${a.id},'CANCELLED')">✕ Cancel</button>
+              </div>
+            </div>`).join('') :
+          '<div class="empty"><div class="empty-icon">✅</div><p>Queue is empty!</p></div>';
+      } catch(e) {
+        document.getElementById('d-queue-list').innerHTML = '<div class="empty"><p>Could not load queue</p></div>';
+      }
+    }
+
+    async function updateAppt(id, status) {
+      try {
+        await fetch(`${API}/appointments/update/${id}`, {
+          method: 'PUT',
+          headers: authHeader(),
+          body: JSON.stringify({status})
+        });
+        loadDoctorQueueView();
+        loadDoctorDashboard();
+      } catch(e) { alert('Error updating appointment'); }
+    }
+
+    async function loadDoctorProfile() {
+      document.getElementById('d-profile-info').innerHTML = `
+        <div class="profile-box">
+          <div class="profile-avatar">${(userName||'D')[0]}</div>
+          <div class="profile-info">
+            <h3>${userName||'Doctor'}</h3>
+            <p style="margin-top:4px"><span class="role-tag role-doctor">Doctor</span></p>
+          </div>
+        </div>
+        <table class="table">
+          <tr><td style="color:var(--text3);width:140px">Name</td><td>${userName||'—'}</td></tr>
+          <tr><td style="color:var(--text3)">Role</td><td>Doctor</td></tr>
+          <tr><td style="color:var(--text3)">Status</td><td><span class="badge badge-confirm">Active</span></td></tr>
+        </table>`;
+    }
+
+    // ===== ADMIN =====
+    function adminTab(t) {
+      ['overview','doctors','appointments'].forEach(tab => {
+        document.getElementById('atab-'+tab).style.display = tab===t ? 'block' : 'none';
+      });
+      document.querySelectorAll('#page-admin .sidebar-item').forEach((el,i) => {
+        el.classList.toggle('active', ['overview','doctors','appointments'][i]===t);
+      });
+      if (t==='doctors') loadAdminDoctors();
+      if (t==='appointments') loadAdminAppointments();
+    }
+
+    async function loadAdminDashboard() {
+      document.getElementById('admin-nav-name').textContent = userName || '';
+      try {
+        const docsRes = await fetch(`${API}/doctors/all`, {headers: authHeader()});
+        if (docsRes.ok) {
+          const docs = await docsRes.json();
+          document.getElementById('a-docs').textContent = docs.length;
+        }
+      } catch(e) {}
+    }
+
+    async function loadAdminDoctors() {
+      try {
+        const res = await fetch(`${API}/doctors/all`, {headers: authHeader()});
+        if (!res.ok) { document.getElementById('admin-doctors-list').innerHTML = '<div class="empty"><p>No doctors yet</p></div>'; return; }
+        const docs = await res.json();
+        document.getElementById('admin-doctors-list').innerHTML = docs.length ?
+          `<table class="table"><thead><tr><th>Name</th><th>Specialization</th><th>Fee</th><th>Status</th></tr></thead><tbody>` +
+          docs.map(d => `<tr><td>👨‍⚕️ ${d.user?.name||'—'}</td><td>${d.specialization||'—'}</td><td>₹${d.consultationFee||0}</td><td><span class="badge badge-confirm">Active</span></td></tr>`).join('') +
+          `</tbody></table>` :
+          '<div class="empty"><div class="empty-icon">👨‍⚕️</div><p>No doctors yet</p></div>';
+      } catch(e) {}
+    }
+
+    async function loadAdminAppointments() {
+      document.getElementById('admin-appts-list').innerHTML = '<div class="loading">Loading...</div>';
+    }
+
+    window.onload = () => {
+      if (token && userRole) goToDashboard();
+    };
+</script>
+</body>
+</html>
