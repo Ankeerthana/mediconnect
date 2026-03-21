@@ -10,7 +10,7 @@
     }
   },
   "deploy": {
-    "startCommand": "java -Dserver.port=$PORT -jar target/*.jar",
+    "startCommand": "java -Dserver.port=${PORT:-8080} -Djwt.secret=${jwt.secret} -Djwt.expiration=${jwt.expiration} -jar target/*.jar",
     "restartPolicyType": "ON_FAILURE"
   }
 }
