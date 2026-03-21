@@ -10,10 +10,10 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
+    @Value("${JWT_SECRET:mySecretKeyForMediConnectApp2024VeryLongAndSecure}")
     private String secret;
 
-    @Value("${jwt.expiration}")
+    @Value("${JWT_EXPIRATION:86400000}")
     private long expiration;
 
     private SecretKey getSigningKey() {
