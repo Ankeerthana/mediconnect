@@ -10,7 +10,7 @@
     }
   },
   "deploy": {
-    "startCommand": "java -jar target/*.jar",
+    "startCommand": "java -Dserver.port=$PORT -jar target/*.jar",
     "restartPolicyType": "ON_FAILURE"
   }
 }
