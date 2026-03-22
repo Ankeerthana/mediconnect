@@ -4,7 +4,9 @@
 A production-ready full stack application that eliminates clinic waiting chaos through real-time queue tracking, seamless appointment booking and intelligent patient management.
 
 ## 🌟 Live Demo
-- **API Docs:** [Swagger UI](https://your-url.up.railway.app/swagger-ui/index.html)
+- **🌐 Frontend:** [MediConnect App](https://profound-pie-914901.netlify.app)
+- **📋 Swagger API Docs:** [Swagger UI](https://mediconnect-1xln.onrender.com/swagger-ui/index.html)
+- **💻 GitHub:** [Source Code](https://github.com/Ankeerthana/mediconnect)
 
 ## 🚀 Features
 - Patient registration and JWT login
@@ -21,7 +23,7 @@ A production-ready full stack application that eliminates clinic waiting chaos t
 - **ORM:** JPA / Hibernate
 - **Docs:** Swagger / OpenAPI
 - **Frontend:** HTML, CSS, JavaScript
-- **Deploy:** Docker + Railway
+- **Deploy:** Docker + Render + Netlify
 
 ## ⚙️ API Endpoints
 | Method | Endpoint | Description |
@@ -44,7 +46,8 @@ A production-ready full stack application that eliminates clinic waiting chaos t
 ```bash
 git clone https://github.com/Ankeerthana/mediconnect.git
 cd mediconnect
-# Update application.properties with your DB password
+# Copy application.properties.example to application.properties
+# Update with your DB and mail credentials
 ./mvnw spring-boot:run
 ```
 
